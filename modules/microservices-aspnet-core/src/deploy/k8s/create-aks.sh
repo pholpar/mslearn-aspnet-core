@@ -153,14 +153,14 @@ echo "Getting load balancer public IP"
 k8sLbTag="ingress-nginx/ingress-nginx"
 aksNodeRGCommand="az aks list --query \"[?name=='$eshopAksName'&&resourceGroup=='$eshopRg'].nodeResourceGroup\" -otsv"
 
-retry=5
+retry=1
 echo "${newline} > ${azCliCommandStyle}$aksNodeRGCommand${defaultTextStyle}${newline}"
 aksNodeRG=$(eval $aksNodeRGCommand)
 while [ "$aksNodeRG" == "" ]
 do
     echo
-    echo "Unable to obtain load balancer resource group. Retrying in 5s..."
-    let retry--
+    echo "Unable to obtain load balancer resource group (retry $retry). Retrying in 5s..."
+    let retry++
     sleep 5
     echo
     echo "Retrying..."
@@ -168,14 +168,21 @@ do
     aksNodeRG=$(eval $aksNodeRGCommand)
 done
 
-
+retry=1
 while [ "$eshopLbIp" == "" ]
 do
-    eshopLbIpCommand="az network public-ip list -g $aksNodeRG --query \"[?tags.service=='$k8sLbTag'].ipAddress\" -otsv"
+    eshopLbIpIdCommand="az network lb show -g $aksNodeRG -n kubernetes --query 'frontendIpConfigurations | [?loadBalancingRules != null].publicIpAddress.id' -o tsv"
+    echo "${newline} > ${azCliCommandStyle}$eshopLbIpIdCommand${defaultTextStyle}${newline}"
+    eshopLbIpId=$(eval $eshopLbIpIdCommand)
+    eshopLbIpCommand="az network public-ip show --ids $eshopLbIpIdCommand --query 'ipAddress' -o tsv"
     echo "${newline} > ${azCliCommandStyle}$eshopLbIpCommand${defaultTextStyle}${newline}"
     eshopLbIp=$(eval $eshopLbIpCommand)
-    echo "Waiting for the load balancer IP address..."
-    sleep 5
+    if [ "$eshopLbIp" == "" ]
+    then
+        echo "Waiting for the load balancer IP address (retry $retry). Retrying in 5s..."
+        let retry++
+        sleep 5
+    fi
 done
 
 echo "Done!"

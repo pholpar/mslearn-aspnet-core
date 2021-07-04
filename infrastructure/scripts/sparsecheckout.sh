@@ -8,7 +8,7 @@
 
 # constants
 DIR="aspnet-learn"
-REPOS="https://github.com/MicrosoftDocs/mslearn-aspnet-core"
+REPOS="https://github.com/pholpar/mslearn-aspnet-core"
 BRANCH=$gitBranch
 
 # input parameters
