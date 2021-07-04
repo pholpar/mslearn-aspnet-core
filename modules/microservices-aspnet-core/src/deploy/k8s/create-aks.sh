@@ -174,7 +174,7 @@ do
     eshopLbIpIdCommand="az network lb show -g $aksNodeRG -n kubernetes --query 'frontendIpConfigurations | [?loadBalancingRules != null].publicIpAddress.id' -o tsv"
     echo "${newline} > ${azCliCommandStyle}$eshopLbIpIdCommand${defaultTextStyle}${newline}"
     eshopLbIpId=$(eval $eshopLbIpIdCommand)
-    eshopLbIpCommand="az network public-ip show --ids $eshopLbIpIdCommand --query 'ipAddress' -o tsv"
+    eshopLbIpCommand="az network public-ip show --ids $eshopLbIpId --query 'ipAddress' -o tsv"
     echo "${newline} > ${azCliCommandStyle}$eshopLbIpCommand${defaultTextStyle}${newline}"
     eshopLbIp=$(eval $eshopLbIpCommand)
     if [ "$eshopLbIp" == "" ]
